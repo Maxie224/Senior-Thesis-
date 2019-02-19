@@ -71,13 +71,37 @@ print " Armed: %s" % disco.vehicle.armed    # settable
 
 
 # Prepare Parameters for Hand Takeoff
+
 disco.vehicle.parameters['TKOFF_THR_MINACC']=9
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TKOFF_THR_MINACC']==20:
+        break
+    time.sleep(1)
 print("Minimum Takeoff Acceleration set to 9m/s/s")
+
 disco.vehicle.parameters['TKOFF_THR_DELAY']=2
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TKOFF_THR_DELAY']==20:
+        break
+    time.sleep(1)
 print("Takeoff Delay set to 0.2 Seconds")
+
 disco.vehicle.parameters['TKOFF_THR_MINSPD']=4
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TKOFF_THR_MINSPD']==20:
+        break
+    time.sleep(1)
 print("Takeoff Minspeed set to 4m/s")
+
 disco.vehicle.parameters['TECS_PITCH_MAX']=20
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TECS_PITCH_MAX']==20:
+        break
+    time.sleep(1)
 print("Maximum Pitch set to 20 Degrees")
 
 # Arm and Set to AUTO
