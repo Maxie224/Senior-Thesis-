@@ -110,6 +110,46 @@ disco.arm()
 disco.set_ap_mode("AUTO")
 print("Mode Set, Hand Takeoff Now!")
 time.sleep(10)
+
+"""
+aTargetALtitude = 50;
+
+while True:
+        print(" Altitude: ", disco.vehicle.location.global_relative_frame.alt)
+        # Break and return from function just below target altitude.
+        if disco.vehicle.location.global_relative_frame.alt >= aTargetAltitude * 0.95:
+            print("Reached target altitude")
+            break
+        time.sleep(1)
+        """
+        
+disco.set_ap_mode("QLOITER")
 print("Ready to be Commanded!")
 
-# Fly to One Location and Fly Back
+	original_location = disco.vehicle.location.global_relative_frame
+	print("Setting Airspeed to 15")
+	disco.set_airspeed(15)
+
+# Searching
+for i in range(1,5):
+
+	new_target = disco._get_location_metres(original_location, 3, 1)
+	disco.goto(new_target)
+	
+	while not disco.vehicle.location.global_relative_frame = new_target
+		print("Traveling...")
+		# Statement Breaking if the Disco sees a target
+		time.sleep(3)
+		
+	original_location = disco.vehicle.location.global_relative_frame
+	
+	new_target = disco._get_location_metres(original_location, -3, 1)
+	disco.goto(new_target)
+	
+	while not disco.vehicle.location.global_relative_frame = new_target
+		print("Traveling...")
+		# Statement Breaking if the Disco sees a target
+		time.sleep(3)
+		
+	original_location = disco.vehicle.location.global_relative_frame
+	i++
