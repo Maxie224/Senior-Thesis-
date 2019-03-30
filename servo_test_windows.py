@@ -60,10 +60,30 @@ while not vehicle.armed:
 	
 print 'Vehicle Armed!'
 
-for x in range(1, 60):
-	set_servo(vehicle, x, 1100)
-	time.sleep(2)
-	set_servo(vehicle, x, 1900)
-	time.sleep(2)
-	set_servo(vehicle, x, 1100)
-	print('Servo', x,'Tested')
+# for x in range(1, 16):
+# 	set_servo(vehicle, x, 1100)
+# 	time.sleep(2)
+# 	set_servo(vehicle, x, 1900)
+# 	time.sleep(2)
+# 	set_servo(vehicle, x, 1100)
+# 	print('Servo', x,'Tested')
+
+msg = []
+for x in range(1, 16):
+	servo_string = 'SERVO' + str(x) + '_FUNCTION'
+	vehicle.parameters[servo_string] = 0
+	print 'Servo String: %i' % (vehicle.parameters[servo_string])
+	temp = vehicle.message_factory.command_long_encode(
+    	0, 0,    # target_system, target_component
+    	mavutil.mavlink.MAV_CMD_DO_REPEAT_SERVO, #command
+    	0, #confirmation
+    	x ,    # param 1, servo No
+    	1500,          # param 2, pwm
+    	1,          # param 3, repeat #
+    	2, # param 4, delay
+    	0, 0, 0)    # param 5 ~ 7 not used
+	msg.append(temp)
+
+# Send command to vehicle
+for i in msg:
+	vehicle.send_mavlink(i)

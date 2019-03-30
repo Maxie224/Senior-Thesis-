@@ -10,13 +10,16 @@ import psutil
 import copy   
 import argparse
 
-connection_string = '/dev/tty.usbserial-DN02RJOC'
+# connection_string = '/dev/tty.usbserial-DN02RJOC' # MAC
+connection_string = 'com6'
 
 # Initialize the Vehicle
 vehicle = connect(connection_string, baud=57600, wait_ready=False)
 vehicle.wait_ready(True, timeout=300)
 
 print('Connection Successful!')
+
+print "Channel values from RC Tx:", vehicle.channels
 
 # Arming the Vehicle
 vehicle.parameters['ARMING_CHECK']=0
@@ -36,3 +39,8 @@ while not vehicle.armed:
 	time.sleep(1)
 	
 print('Vehicle Armed!')
+
+vehicle.channels.overrides['5'] = 1900
+time.sleep(2)
+vehicle.channels.overrides['5'] = 1100
+time.sleep(2)
