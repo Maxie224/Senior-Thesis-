@@ -11,10 +11,14 @@
 # usage: python2 vicon_capture.py {--output <folder> | --time <in minutes> | --config <file> | --training <file>}
 #
 
+from dronekit import connect, VehicleMode, LocationGlobalRelative, Command, Battery, LocationGlobal, Attitude
+from pymavlink import mavutil
+
 from eagleeye import Sleeper, EasyConfig, EasyArgs
 from datetime import datetime
 from serial import Serial
-import csv, sys, os
+import csv, sys, os, math
+import time as time_pkg
 from python_vicon import PyVicon
 
 def getDistance(x1, y1, z1, x2, y2, z2):
@@ -22,6 +26,36 @@ def getDistance(x1, y1, z1, x2, y2, z2):
     return distance
 
 def main(sysargs):
+    # ---------- DRONE CODE ----------
+    connection_string = '/dev/tty.usbserial-DN02RJOC' # MAC
+    connection_string = 'com6'
+
+    # Initialize the Vehicle
+    vehicle = connect(connection_string, baud=57600, wait_ready=False)
+    vehicle.wait_ready(True, timeout=300)
+    print "Connection Successful!"
+
+    # Disabling arming check
+    vehicle.parameters['ARMING_CHECK']=0
+    while not vehicle.parameters['ARMING_CHECK']==0:
+        time_pkg.sleep(1)
+    print "Arming Check Disabled"
+
+    # Arming the vehicle
+    print "Arming motors"
+    # Copter should arm in GUIDED mode
+    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.armed = True
+    time_pkg.sleep(1)
+
+    # Confirm vehicle armed before attempting to take off
+    while not vehicle.armed:
+        print(" Waiting for arming...")
+        time_pkg.sleep(1)
+    print "Vehicle Armed!"
+
+
+    # ---------- VICON CODE ----------
     # set arguments
     args = EasyArgs(sysargs)
     cfg = EasyConfig(args.config, group="capture")
@@ -117,7 +151,6 @@ def main(sysargs):
         
         client.frame()
         for s in subjects:
-            print "TRANSLATION FOR %s: %s" % (s, client.translation(s)[0])
             csvwriters[s].writerow(
                 [sleeper.getStamp(), flash] + 
                 list(client.translation(s)) + 
@@ -131,8 +164,18 @@ def main(sysargs):
         y2 = client.translation(subjects[1])[1]
         z2 = client.translation(subjects[1])[2]
         distance = getDistance(x1, y1, z1, x2, y2, z2)
-        if abs(distance) < 25:
-            print "Near! Must activate servo code\n"
+        print "Distance between %s and %s: %f" % (subjects[0], subjects[1], distance)
+
+        distance_threshold = 250
+        if abs(distance) < distance_threshold:
+            # ---------- SERVO CODE ----------
+            print "Near! Activating deployment mechanism..."
+            deployment_servo_ch = '7'
+            vehicle.channels.overrides[deployment_servo_ch] = 1900
+            time_pkg.sleep(2)
+            vehicle.channels.overrides[deployment_servo_ch] = 1100
+            time_pkg.sleep(2)
+            print "Deployed!"
 
         # sleep until next timestamp
         sys.stdout.write("{}/{}\r".format(c, num_frames))

@@ -16,8 +16,7 @@ connection_string = 'com6'
 # Initialize the Vehicle
 vehicle = connect(connection_string, baud=57600, wait_ready=False)
 vehicle.wait_ready(True, timeout=300)
-
-print('Connection Successful!')
+print "Connection successful!"
 
 print "Channel values from RC Tx:", vehicle.channels
 
@@ -25,9 +24,9 @@ print "Channel values from RC Tx:", vehicle.channels
 vehicle.parameters['ARMING_CHECK']=0
 while not vehicle.parameters['ARMING_CHECK']==0:
 	time.sleep(1)
-print("Arming Check Disabled")
+print "Arming Check Disabled"
 
-print("Arming motors")
+print "Arming motors"
 # Copter should arm in GUIDED mode
 vehicle.mode = VehicleMode("STABILIZE")
 vehicle.armed = True
@@ -38,9 +37,12 @@ while not vehicle.armed:
 	print(" Waiting for arming...")
 	time.sleep(1)
 	
-print('Vehicle Armed!')
+print 'Vehicle Armed!'
 
-vehicle.channels.overrides['5'] = 1900
+print 'Moving servos...'
+deployment_servo_ch = '7'
+vehicle.channels.overrides[deployment_servo_ch] = 1900
 time.sleep(2)
-vehicle.channels.overrides['5'] = 1100
+vehicle.channels.overrides[deployment_servo_ch] = 1100
 time.sleep(2)
+print 'Servo moved!'

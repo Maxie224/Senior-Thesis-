@@ -108,7 +108,9 @@ for i in range(mock_drone_count):
 
 		# ---------- DRONE CODE: MOVE SERVOS ---------- 
 		print('Moving servos')
-		vehicle.channels.overrides['5'] = 1900
+		deployment_servo_ch = '7'
+		vehicle.channels.overrides[deployment_servo_ch] = 1900
 		time.sleep(2)
-		vehicle.channels.overrides['5'] = 1100
+		vehicle.channels.overrides[deployment_servo_ch] = 1100
 		time.sleep(2)
+		print('Servo moved!')'
