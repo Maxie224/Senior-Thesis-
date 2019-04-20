@@ -1,0 +1,110 @@
+""" Taking off using the library from GitHub """
+
+from dronekit import connect, VehicleMode, LocationGlobalRelative, Command, Battery, LocationGlobal, Attitude
+from droneapi.lib import VehicleMode
+from pymavlink import mavutil
+from plane import Plane
+
+import time
+import math
+import numpy as np 
+import psutil
+import copy   
+import argparse
+
+#connection_string = 'tcp:127.0.0.1:5760'
+connection_string = '/dev/tty.usbserial-DN02RJOC'
+
+# Initialize the Vehicle
+disco = Plane(connection_string, None)
+
+print('Connection Successful!')
+
+
+# Print the Vehicle's Current State
+# Get all vehicle attributes (state)
+print("VEHICLE CURRENT STATE")
+print "\nGet all vehicle attribute values:"
+print " Autopilot Firmware version: %s" % disco.vehicle.version
+print "   Major version number: %s" % disco.vehicle.version.major
+print "   Minor version number: %s" % disco.vehicle.version.minor
+print "   Patch version number: %s" % disco.vehicle.version.patch
+print "   Release type: %s" % disco.vehicle.version.release_type()
+print "   Release version: %s" % disco.vehicle.version.release_version()
+print "   Stable release?: %s" % disco.vehicle.version.is_stable()
+print " Global Location: %s" % disco.vehicle.location.global_frame
+print " Global Location (relative altitude): %s" % disco.vehicle.location.global_relative_frame
+print " Local Location: %s" % disco.vehicle.location.local_frame
+print " Attitude: %s" % disco.vehicle.attitude
+print " Velocity: %s" % disco.vehicle.velocity
+print " GPS: %s" % disco.vehicle.gps_0
+print " Gimbal status: %s" % disco.vehicle.gimbal
+print " Battery: %s" % disco.vehicle.battery
+print " EKF OK?: %s" % disco.vehicle.ekf_ok
+print " Last Heartbeat: %s" % disco.vehicle.last_heartbeat
+print " Heading: %s" % disco.vehicle.heading
+print " Is Armable?: %s" % disco.vehicle.is_armable
+print " System status: %s" % disco.vehicle.system_status.state
+print " Groundspeed: %s" % disco.vehicle.groundspeed    # settable
+
+# Prepare Parameters for Hand Takeoff
+
+
+disco.vehicle.parameters['TKOFF_THR_MINACC']=0
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TKOFF_THR_MINACC']==0:
+        break
+    time.sleep(1)
+print("Minimum Takeoff Acceleration set to 0m/s/s")
+
+disco.vehicle.parameters['TKOFF_THR_DELAY']=0
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['TKOFF_THR_DELAY']==0:
+        break
+    time.sleep(1)
+print("Takeoff Delay set to 0 Seconds")
+
+disco.vehicle.parameters['ARMING_CHECK']=0
+for x in range(1,5):
+    #Callbacks may not be updated for a few seconds
+    if disco.vehicle.parameters['ARMING_CHECK']==0:
+        break
+    time.sleep(1)
+print("Arming Check set to 0 Seconds")
+
+disco.vehicle.clear_mission()
+
+# Arming and Taking off
+altitude = 25
+pitch_deg = 12
+
+disco.mission_add_takeoff(takeoff_altitude=1.5*altitude, takeoff_pitch=pitch_deg)
+print ("Takeoff mission ready")
+while not disco.vehicle.is_armable:
+    print("Wait to be armable...")
+    time.sleep(1.0)
+
+disco.set_ap_mode("MANUAL")
+n_tries = 0
+while not disco.vehicle.armed:
+    	print("Try to arm...")
+        disco.arm()
+        n_tries += 1
+        time.sleep(2.0) 
+            
+        if n_tries > 5:
+            print("!!! CANNOT ARM")
+            break
+                
+ #--- Set to auto and check the ALTITUDE
+if disco.vehicle.armed: 
+    print ("ARMED")
+    disco.set_ap_mode("AUTO")
+
+time.sleep(5)
+
+	
+print('Switching to RC for Landing')
+disco.set_ap_mode('MANUAL')
