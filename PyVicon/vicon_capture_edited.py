@@ -190,12 +190,15 @@ def main(sysargs):
     print "Initial position: (%f, %f, %f)" % (drone_x1, drone_y1, drone_z1)
     print "Initial time: %s s" % (t0)
 
+    # Initialize
     distance_threshold = float('-inf')
-
-    # Main loop
+    distance = None
     drone_vx = None
     drone_vy = None
     drone_vz = None
+
+    # Main loop
+    print "---------- MAIN LOOP START ----------\n"
     for c in range(0, num_frames):
         sleeper.stamp()
         
@@ -218,7 +221,8 @@ def main(sysargs):
                 list(client.rotation(s)) + 
                 list(client.markerStatus(s)) +
                 [is_deployed] +
-                [drone_vx, drone_vy, drone_vz])
+                [drone_vx, drone_vy, drone_vz] +
+                [distance_threshold, distance])
         
         # Calculate instantaneous velocity of drone
         drone_x2 = client.translation(drone_obj)[x_index] # VWC
@@ -242,23 +246,22 @@ def main(sysargs):
         temp_distance = math.sqrt(x_distance**2 + y_distance**2) # VWC
         time_buffer = .1 # s
         distance_threshold = math.sqrt(drone_vx**2 + drone_vy**2) * ((drone_vz + math.sqrt(drone_vz**2 + 2. * g * abs(drone_z2 - target_z))) / g + time_buffer) # VWC
-        # print "2D distance (x and y) %f VWC" % (temp_distance)
-        print "Distance threshold: %f VWC" % (distance_threshold)
 
         # Calculate updated distance between drone and target
         distance = get2dDistance(drone_x2, drone_y2, target_x, target_y)
-        print "2D distance between %s and %s: %f VWC" % (drone_obj, target_obj, distance)
 
         # Check if servo code should be activated
         if abs(distance) < distance_threshold:
             # ---------- SERVO CODE ----------
-            print "-------------------------------- Near! Activating deployment mechanism... --------------------------------"
+            print "---------- Near! Activating deployment mechanism... ----------"
             deployment_servo_ch = '6'
             vehicle.channels.overrides[deployment_servo_ch] = 1900
             time_pkg.sleep(2)
             vehicle.channels.overrides[deployment_servo_ch] = 1100
             time_pkg.sleep(2)
-            print "-------------------------------- Deployed! --------------------------------"
+            print "---------- Deployed! ----------"
+            print "Distance threshold: %f VWC" % (distance_threshold)
+            print "2D distance between %s and %s: %f VWC" % (drone_obj, target_obj, distance)
             print "X-Velocity: %f VWC / s" % (drone_vx)
             print "Y-Velocity: %f VWC / s" % (drone_vy)
             print "Z-Velocity: %f VWC / s\n" % (drone_vz)
@@ -271,9 +274,6 @@ def main(sysargs):
         sys.stdout.flush()
 
         # Update initial coordinates of drone
-        print "X-Velocity: %f VWC / s" % (drone_vx)
-        print "Y-Velocity: %f VWC / s" % (drone_vy)
-        print "Z-Velocity: %f VWC / s\n" % (drone_vz)
         drone_x1 = drone_x2
         drone_y1 = drone_y2
         drone_z1 = drone_z2
