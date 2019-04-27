@@ -32,32 +32,32 @@ def get2dDistance(x1, y1, x2, y2):
 
 def main(sysargs):
     # ---------- DRONE CODE ----------
-    connection_string = '/dev/tty.usbserial-DN02RJOC' # MAC
-    connection_string = 'com6'
+    # connection_string = '/dev/tty.usbserial-DN02RJOC' # MAC
+    # connection_string = 'com6'
 
-    # Initialize the Vehicle
-    vehicle = connect(connection_string, baud=57600, wait_ready=False)
-    vehicle.wait_ready(True, timeout=300)
-    print "Connection Successful!"
+    # # Initialize the Vehicle
+    # vehicle = connect(connection_string, baud=57600, wait_ready=False)
+    # vehicle.wait_ready(True, timeout=300)
+    # print "Connection Successful!"
 
-    # Disabling arming check
-    vehicle.parameters['ARMING_CHECK']=0
-    while not vehicle.parameters['ARMING_CHECK']==0:
-        time_pkg.sleep(1)
-    print "Arming Check Disabled"
+    # # Disabling arming check
+    # vehicle.parameters['ARMING_CHECK']=0
+    # while not vehicle.parameters['ARMING_CHECK']==0:
+    #     time_pkg.sleep(1)
+    # print "Arming Check Disabled"
 
-    # Arming the vehicle
-    print "Arming motors"
-    # Copter should arm in GUIDED mode
-    vehicle.mode = VehicleMode("MANUAL")
-    vehicle.armed = True
-    time_pkg.sleep(1)
+    # # Arming the vehicle
+    # print "Arming motors"
+    # # Copter should arm in GUIDED mode
+    # vehicle.mode = VehicleMode("MANUAL")
+    # vehicle.armed = True
+    # time_pkg.sleep(1)
 
-    # Confirm vehicle armed before attempting to take off
-    while not vehicle.armed:
-        print(" Waiting for arming...")
-        time_pkg.sleep(1)
-    print "Vehicle Armed!"
+    # # Confirm vehicle armed before attempting to take off
+    # while not vehicle.armed:
+    #     print(" Waiting for arming...")
+    #     time_pkg.sleep(1)
+    # print "Vehicle Armed!"
 
 
     # ---------- VICON CODE ----------
@@ -140,15 +140,15 @@ def main(sysargs):
     
     print ""
     
-    aileron_servo = 'aileron'
+    # aileron_servo = 'aileron'
     
-    for x in range(11):
-    	vehicle.channels.overrides['3'] = 1100;
-    	aileron_pos = client.translation('aileron')[x_index] # VWC
-    	time_pkg.sleep(30)
-    	vehicle.channels.overrides['3'] = 1500;
+    # for x in range(11):
+    # 	vehicle.channels.overrides['3'] = 1100;
+    # 	aileron_pos = client.translation('aileron')[x_index] # VWC
+    # 	time_pkg.sleep(30)
+    # 	vehicle.channels.overrides['3'] = 1500;
     
-    """
+    
     # Initialization before main loop
     is_deployed = False
     x_index = 0

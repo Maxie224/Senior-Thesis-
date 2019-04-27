@@ -245,7 +245,8 @@ def main(sysargs):
         target_z = client.translation(target_obj)[z_index] # VWC
         temp_distance = math.sqrt(x_distance**2 + y_distance**2) # VWC
         time_buffer = .1 # s
-        distance_threshold = math.sqrt(drone_vx**2 + drone_vy**2) * ((drone_vz + math.sqrt(drone_vz**2 + 2. * g * abs(drone_z2 - target_z))) / g + time_buffer) # VWC
+        latency_buffer = .321
+        distance_threshold = math.sqrt(drone_vx**2 + drone_vy**2) * ((drone_vz + math.sqrt(drone_vz**2 + 2. * g * abs(drone_z2 - target_z))) / g + time_buffer + latency_buffer) # VWC
 
         # Calculate updated distance between drone and target
         distance = get2dDistance(drone_x2, drone_y2, target_x, target_y)
