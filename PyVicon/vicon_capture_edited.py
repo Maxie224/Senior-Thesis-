@@ -26,6 +26,10 @@ def getDistance(x1, y1, z1, x2, y2, z2):
     distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
     return distance
 
+def get2dDistance(x1, y1, x2, y2):
+    distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+    return distance
+
 def main(sysargs):
     # ---------- DRONE CODE ----------
     connection_string = '/dev/tty.usbserial-DN02RJOC' # MAC
@@ -175,7 +179,7 @@ def main(sysargs):
 
     # Save initial position and time
     drone_obj = 'drone'
-    target_obj = 'mock_target_2'
+    target_obj = 'mock_target_1'
     drone_x1 = client.translation(drone_obj)[x_index] # VWC
     drone_y1 = client.translation(drone_obj)[y_index] # VWC
     drone_z1 = client.translation(drone_obj)[z_index] # VWC
@@ -220,7 +224,7 @@ def main(sysargs):
         drone_x2 = client.translation(drone_obj)[x_index] # VWC
         drone_y2 = client.translation(drone_obj)[y_index] # VWC
         drone_z2 = client.translation(drone_obj)[z_index] # VWC
-        t = time_pkg.time()
+        t = time_pkg.time() # s
         time_passed = t - t0 # s
         x_distance = drone_x2 - drone_x1 # VWC
         y_distance = drone_y2 - drone_y1 # VWC
@@ -236,13 +240,14 @@ def main(sysargs):
         target_y = client.translation(target_obj)[y_index] # VWC
         target_z = client.translation(target_obj)[z_index] # VWC
         temp_distance = math.sqrt(x_distance**2 + y_distance**2) # VWC
-        distance_threshold = math.sqrt(drone_vx**2 + drone_vy**2) * (drone_vz + math.sqrt(drone_vz**2 + 2. * g * abs(drone_z2 - target_z))) / g # VWC
-        print "2D distance (x and y) %f VWC" % (temp_distance)
+        time_buffer = .1 # s
+        distance_threshold = math.sqrt(drone_vx**2 + drone_vy**2) * ((drone_vz + math.sqrt(drone_vz**2 + 2. * g * abs(drone_z2 - target_z))) / g + time_buffer) # VWC
+        # print "2D distance (x and y) %f VWC" % (temp_distance)
         print "Distance threshold: %f VWC" % (distance_threshold)
 
         # Calculate updated distance between drone and target
-        distance = getDistance(drone_x2, drone_y2, drone_z2, target_x, target_y, target_z)
-        print "Distance between %s and %s: %f VWC\n" % (drone_obj, target_obj, distance)
+        distance = get2dDistance(drone_x2, drone_y2, target_x, target_y)
+        print "2D distance between %s and %s: %f VWC" % (drone_obj, target_obj, distance)
 
         # Check if servo code should be activated
         if abs(distance) < distance_threshold:
@@ -266,10 +271,14 @@ def main(sysargs):
         sys.stdout.flush()
 
         # Update initial coordinates of drone
+        print "X-Velocity: %f VWC / s" % (drone_vx)
+        print "Y-Velocity: %f VWC / s" % (drone_vy)
+        print "Z-Velocity: %f VWC / s\n" % (drone_vz)
         drone_x1 = drone_x2
         drone_y1 = drone_y2
         drone_z1 = drone_z2
         t0 = t
+        time_pkg.sleep(0.1)
         
     # clean up
     for f in csvfiles: f.close()
