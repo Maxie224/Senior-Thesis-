@@ -69,6 +69,9 @@ class PyVicon:
     
     def markerStatus(self, name):
         return pyvicon.markerStatus(self._c, name)
+
+    def markerGlobalTranslations(self, name):
+        return pyvicon.markerGlobalTranslations(self._c, name)
     
     def setStreamMode(self, streamMode):
         return pyvicon.setStreamMode(self._c, streamMode)

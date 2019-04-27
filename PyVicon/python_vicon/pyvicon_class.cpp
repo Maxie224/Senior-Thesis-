@@ -405,6 +405,35 @@ static PyObject* pyvicon_markerstatus(PyObject* self, PyObject* args) {
     return Py_BuildValue("II", total, visible);
 }
 
+static PyObject* pyvicon_markerglobaltranslations(PyObject* self, PyObject* args) {
+    // inputs
+    PyObject* capsule;
+    char* name;
+
+    //parse
+    if (!PyArg_ParseTuple(args, "Os", &capsule, &name)) return NULL;
+    Client* client = (Client*)PyCapsule_GetPointer(capsule, NULL);
+
+    Output_GetMarkerCount count_out = client->GetMarkerCount(name);
+    if (handleError(count_out.Result)) return NULL;
+
+    unsigned int total = count_out.MarkerCount;
+    
+    PyObject *lst = PyList_New(total);
+    if (!lst) {
+        return NULL;
+    }
+    for (unsigned int i = 0; i < total; i++) {
+        Output_GetMarkerName name_out = client->GetMarkerName(name, i);
+        if (handleError(name_out.Result)) return NULL;
+
+        Output_GetMarkerGlobalTranslation translation_out = client->GetMarkerGlobalTranslation(name, name_out.MarkerName);
+        float marker_translation = {translation_out.Translation[0], translation_out.Translation[1], translation_out.Translation[2]};
+        PyList_SET_ITEM(lst, i, marker_translation);
+    }
+    return lst;
+}
+
 //------------------------- aaaaand the rest ----------------------------
 
 //declare the accessible functions
@@ -420,6 +449,7 @@ static PyMethodDef ModuleMethods[] = {
      {"globalTranslation", pyvicon_globaltranslation, METH_VARARGS, "Get global translation of a subject"},
      {"markerCount", pyvicon_markercount, METH_VARARGS, "Get number of markers of a subject"},
      {"markerStatus", pyvicon_markerstatus, METH_VARARGS, "Get total and visible number of markers of a subject"},
+     {"markerGlobalTranslations", pyvicon_markerglobaltranslations, METH_VARARGS, "Get global translations of all markers of a subject"}
      {"frame", pyvicon_frame, METH_VARARGS, "A status thing, call it before retrieving any data"},
      {"setStreamMode", pyvicon_setstreammode, METH_VARARGS, "Stream mode: Pull, PreFetch, Push"},
      {"enableSegmentData", pyvicon_enablesegmentdata, METH_VARARGS, "Enables segment data. Just always use it, I guess."},
