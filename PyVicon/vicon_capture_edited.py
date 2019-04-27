@@ -193,6 +193,9 @@ def main(sysargs):
     distance_threshold = float('-inf')
 
     # Main loop
+    drone_vx = None
+    drone_vy = None
+    drone_vz = None
     for c in range(0, num_frames):
         sleeper.stamp()
         
@@ -208,9 +211,6 @@ def main(sysargs):
         
         client.frame()
 
-        drone_vx = None
-        drone_vy = None
-        drone_vz = None
         for s in subjects:
             csvwriters[s].writerow(
                 [sleeper.getStamp(), flash] + 
